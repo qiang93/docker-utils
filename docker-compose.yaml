@@ -1,0 +1,27 @@
+version: '2.3'
+
+services:
+  utils:
+    image: docker-utils:test
+    build: .
+    entrypoint: /srv/scripts/tail.sh
+    environment:
+      AWS_PROFILE: stag
+    volumes:
+    - "~/.gitconfig:/root/.gitconfig"
+    - "~/.bash_history:/root/.bash_history"
+    - "~/.aws:/root/.aws"
+    - "~/.ssh:/root/.ssh"
+    - "~/.gnupg:/root/.gnupg"
+    - "/var/run/docker.sock:/var/run/docker.sock:ro"
+  mongo:
+    # mongo mongodb://mongo:27017
+    image: mongo:4.0-xenial
+  redis:
+    # redis-cli -h redis
+    image: redis:4.0
+  mysql:
+    # mysql -h mysql
+    image: mysql:5.7
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
