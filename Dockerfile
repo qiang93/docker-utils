@@ -4,6 +4,8 @@ ARG PYTHON_VERSION_TAG="3.8-buster"
 
 FROM redis:${REDIS_VERSION_TAG} as redis
 
+FROM mikefarah/yq:3.3.0 as yq
+
 FROM docker:${DOCKER_VERSION_TAG} as docker
 
 FROM python:${PYTHON_VERSION_TAG}
@@ -37,11 +39,7 @@ RUN apt-get update \
         dirmngr \
         less \
         iputils-ping \
-        snapd \
         bash-completion
-
-# yq
-RUN snap install yq
 
 ARG GIT_AUTO_COMPLETION_URL=https://github.com/git/git/blob/master/contrib/completion/git-completion.bash
 
@@ -127,6 +125,9 @@ COPY --from=redis /usr/local/bin/redis-cli /usr/local/bin/
 
 # docker client
 COPY --from=docker /usr/local/bin/docker /usr/local/bin/
+
+# yq
+COPY --from=yq /usr/bin/yq /usr/bin/
 
 WORKDIR /srv
 COPY build/scripts scripts
