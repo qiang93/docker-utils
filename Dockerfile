@@ -4,8 +4,6 @@ ARG PYTHON_VERSION_TAG="3.8-buster"
 
 FROM redis:${REDIS_VERSION_TAG} as redis
 
-FROM mikefarah/yq:3.3.0 as yq
-
 FROM docker:${DOCKER_VERSION_TAG} as docker
 
 FROM python:${PYTHON_VERSION_TAG}
@@ -41,6 +39,11 @@ RUN apt-get update \
         iputils-ping \
         bash-completion
 
+# pip3
+RUN pip3 --no-cache-dir install \
+    yq
+
+
 ARG GIT_AUTO_COMPLETION_URL=https://github.com/git/git/blob/master/contrib/completion/git-completion.bash
 
 # curl aws-iam-authenticator
@@ -51,14 +54,6 @@ ENV BIN_PATH=/usr/local/bin \
 
 # pre commands
 
-# aliyun cli
-ARG ALIYUN_CLI_VERSION="3.0.39"
-ARG ALIYUN_CLI_URL=https://aliyuncli.alicdn.com/aliyun-cli-linux-$ALIYUN_CLI_VERSION-amd64.tgz
-RUN curl -L $ALIYUN_CLI_URL \
-        -o $TMP_PATH/aliyun-cli.tgz \
-    && tar -xvf $TMP_PATH/aliyun-cli.tgz -C $TMP_PATH \
-    && mv $TMP_PATH/aliyun $BIN_PATH 
-    
 # apt-get kubectl
 ARG KUBECTL_VERSION="1.15.9-00"
 RUN curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg \
@@ -84,28 +79,30 @@ RUN curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg \
 #     && chmod +x $BIN_PATH/sops
 
 # curl helm
-ARG HELM_VERSION="v3.1.2"
-ARG HELM_URL=https://get.helm.sh/helm-$HELM_VERSION-linux-amd64.tar.gz
+ARG HELM_VERSION="v2.16.6"
+ARG HELM_URL=https://storage.googleapis.com/kubernetes-helm/helm-$HELM_VERSION-linux-amd64.tar.gz
 ARG HELM_FOLDER=linux-amd64
 ARG HELM_DIFF_URL=https://github.com/databus23/helm-diff
-ARG HELM_DIFF_VERSION="3.1.1"
+ARG HELM_DIFF_VERSION="2.11.0+5"
 RUN curl -L $HELM_URL \
         -o $TMP_PATH/helm.tar.gz \
     && tar -xvf $TMP_PATH/helm.tar.gz -C $TMP_PATH $HELM_FOLDER \
     && mv $TMP_PATH/$HELM_FOLDER/helm $BIN_PATH \
     && mkdir -p $HOME/.helm/plugins \
     && helm plugin install $HELM_DIFF_URL --version $HELM_DIFF_VERSION \
-    && rm -rf $TMP_PATH/helm.tar.gz $TMP_PATH/$HELM_FOLDER 
+    && helm init --client-only \
+    && rm -rf $TMP_PATH/helm.tar.gz $TMP_PATH/$HELM_FOLDER \
+    && helm repo remove stable local
 
-# # mongodb client
-# RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 9DA31620334BD75D9DCB49F368818C72E52529D4 \
-#     && touch /etc/apt/sources.list.d/mongodb-org-4.0.list \
-#     && echo "deb http://repo.mongodb.org/apt/debian stretch/mongodb-org/4.0 main" \
-#         | tee /etc/apt/sources.list.d/mongodb-org-4.0.list \
-#     && apt-get update \
-#     && apt-get install -y --no-install-recommends \
-#         mongodb-org-shell \
-#         mongodb-org-tools
+# mongodb client
+RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 9DA31620334BD75D9DCB49F368818C72E52529D4 \
+    && touch /etc/apt/sources.list.d/mongodb-org-4.0.list \
+    && echo "deb http://repo.mongodb.org/apt/debian stretch/mongodb-org/4.0 main" \
+        | tee /etc/apt/sources.list.d/mongodb-org-4.0.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
+        mongodb-org-shell \
+        mongodb-org-tools
 
 # mysql/mariadb client
 RUN apt-get install -y --no-install-recommends \
@@ -125,9 +122,6 @@ COPY --from=redis /usr/local/bin/redis-cli /usr/local/bin/
 
 # docker client
 COPY --from=docker /usr/local/bin/docker /usr/local/bin/
-
-# yq
-COPY --from=yq /usr/bin/yq /usr/bin/
 
 WORKDIR /srv
 COPY build/scripts scripts
