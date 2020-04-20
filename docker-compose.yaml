@@ -10,9 +10,8 @@ services:
     volumes:
     - "~/.gitconfig:/root/.gitconfig"
     - "~/.bash_history:/root/.bash_history"
-    - "~/.aws:/root/.aws"
     - "~/.ssh:/root/.ssh"
-    - "~/.gnupg:/root/.gnupg"
+    # - "~/.gnupg:/root/.gnupg"
     - "/var/run/docker.sock:/var/run/docker.sock:ro"
   mongo:
     # mongo mongodb://mongo:27017
