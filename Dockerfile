@@ -41,6 +41,7 @@ RUN apt-get update \
 
 # pip3
 RUN pip3 --no-cache-dir install \
+    awscli \
     yq
 
 
@@ -78,10 +79,18 @@ RUN curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg \
 #         -o $BIN_PATH/sops \
 #     && chmod +x $BIN_PATH/sops
 
+ARG ALIYUN_CLI_VERSION="3.0.39"
+ARG ALIYUN_CLI_URL=https://aliyuncli.alicdn.com/aliyun-cli-linux-$ALIYUN_CLI_VERSION-amd64.tgz
+RUN curl -L $ALIYUN_CLI_URL \
+        -o $TMP_PATH/aliyuncli.tgz \
+    && tar xf $TMP_PATH/aliyuncli.tgz -C /usr/local/bin/
+
 # curl helm
 ARG HELM_VERSION="v2.16.6"
 ARG HELM_URL=https://storage.googleapis.com/kubernetes-helm/helm-$HELM_VERSION-linux-amd64.tar.gz
 ARG HELM_FOLDER=linux-amd64
+ARG HELM_PUSH_URL=https://github.com/chartmuseum/helm-push.git
+ARG HELM_PUSH_VERSION="v0.8.1"
 ARG HELM_DIFF_URL=https://github.com/databus23/helm-diff
 ARG HELM_DIFF_VERSION="2.11.0+5"
 RUN curl -L $HELM_URL \
@@ -90,6 +99,7 @@ RUN curl -L $HELM_URL \
     && mv $TMP_PATH/$HELM_FOLDER/helm $BIN_PATH \
     && mkdir -p $HOME/.helm/plugins \
     && helm plugin install $HELM_DIFF_URL --version $HELM_DIFF_VERSION \
+    && helm plugin install $HELM_PUSH_URL --version $HELM_PUSH_VERSION \
     && helm init --client-only \
     && rm -rf $TMP_PATH/helm.tar.gz $TMP_PATH/$HELM_FOLDER \
     && helm repo remove stable local
