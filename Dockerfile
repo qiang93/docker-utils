@@ -118,6 +118,12 @@ RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 9DA31620334BD75
 RUN apt-get install -y --no-install-recommends \
         mariadb-client
 
+ARG HEPTIO_URL=https://github.com/gyselroth/kube-ldap-client-go-exec-plugin/releases/download/v0.0.1/kube-ldap-client-go-exec-plugin-linux
+RUN curl -L $HEPTIO_URL \
+        -o $BIN_PATH/kube-ldap-client-go-exec-plugin-linux \
+    && chmod +x $BIN_PATH/kube-ldap-client-go-exec-plugin-linux \
+    && ln -s $BIN_PATH/kube-ldap-client-go-exec-plugin-linux $BIN_PATH/kube-ldap-client-go-exec-plugin
+
 ## post commands
 RUN echo "alias ll='ls -lrt'" >> $HOME/.bashrc \
     && echo "source /etc/bash_completion" >> $HOME/.bashrc \
