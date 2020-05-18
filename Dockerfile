@@ -128,6 +128,7 @@ RUN curl -L $HEPTIO_URL \
 RUN echo "alias ll='ls -lrt'" >> $HOME/.bashrc \
     && echo "source /etc/bash_completion" >> $HOME/.bashrc \
     && echo "source <(kubectl completion bash)" >> $HOME/.bashrc \
+    && mkdir ~/.kube/cache -p \
     && apt-get autoremove -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
