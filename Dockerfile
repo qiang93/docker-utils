@@ -67,17 +67,23 @@ RUN curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg \
         kubectl=$KUBECTL_VERSION \
     && ln -s /usr/bin/kubectl /usr/bin/ku
 
-# ARG HEPTIO_URL=https://amazon-eks.s3-us-west-2.amazonaws.com/1.12.7/2019-03-27/bin/linux/amd64/aws-iam-authenticator
-# RUN curl -L $HEPTIO_URL \
-#         -o $BIN_PATH/aws-iam-authenticator \
-#     && chmod +x $BIN_PATH/aws-iam-authenticator \
-#     && ln -s $BIN_PATH/aws-iam-authenticator $BIN_PATH/heptio-authenticator-aws
+ARG HEPTIO_URL=https://amazon-eks.s3-us-west-2.amazonaws.com/1.12.7/2019-03-27/bin/linux/amd64/aws-iam-authenticator
+RUN curl -L $HEPTIO_URL \
+        -o $BIN_PATH/aws-iam-authenticator \
+    && chmod +x $BIN_PATH/aws-iam-authenticator \
+    && ln -s $BIN_PATH/aws-iam-authenticator $BIN_PATH/heptio-authenticator-aws
 
-# # sops
-# ARG SOPS_VERSION="3.3.1"
-# RUN curl -L https://github.com/mozilla/sops/releases/download/$SOPS_VERSION/sops-$SOPS_VERSION.linux \
-#         -o $BIN_PATH/sops \
-#     && chmod +x $BIN_PATH/sops
+ARG RBAC_LOOKUP_URL=https://github.com/FairwindsOps/rbac-lookup/releases/download/v0.5.0/rbac-lookup_0.5.0_Linux_x86_64.tar.gz
+RUN curl -L $RBAC_LOOKUP_URL \
+	-o $TMP_PATH/rbac-lookup.tar.gz \
+    && tar -xvf $TMP_PATH/rbac-lookup.tar.gz -C $TMP_PATH \
+    && cp $TMP_PATH/rbac-lookup /usr/local/bin/
+
+# sops
+ARG SOPS_VERSION="3.3.1"
+RUN curl -L https://github.com/mozilla/sops/releases/download/$SOPS_VERSION/sops-$SOPS_VERSION.linux \
+        -o $BIN_PATH/sops \
+    && chmod +x $BIN_PATH/sops
 
 ARG ALIYUN_CLI_VERSION="3.0.39"
 ARG ALIYUN_CLI_URL=https://aliyuncli.alicdn.com/aliyun-cli-linux-$ALIYUN_CLI_VERSION-amd64.tgz
@@ -105,14 +111,14 @@ RUN curl -L $HELM_URL \
     && helm repo remove stable local
 
 # mongodb client
-RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 9DA31620334BD75D9DCB49F368818C72E52529D4 \
-    && touch /etc/apt/sources.list.d/mongodb-org-4.0.list \
-    && echo "deb http://repo.mongodb.org/apt/debian stretch/mongodb-org/4.0 main" \
-        | tee /etc/apt/sources.list.d/mongodb-org-4.0.list \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends \
-        mongodb-org-shell \
-        mongodb-org-tools
+#RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 9DA31620334BD75D9DCB49F368818C72E52529D4 \
+#    && touch /etc/apt/sources.list.d/mongodb-org-4.0.list \
+#    && echo "deb http://repo.mongodb.org/apt/debian stretch/mongodb-org/4.0 main" \
+#        | tee /etc/apt/sources.list.d/mongodb-org-4.0.list \
+#    && apt-get update \
+#    && apt-get install -y --no-install-recommends \
+#        mongodb-org-shell \
+#        mongodb-org-tools
 
 # mysql/mariadb client
 RUN apt-get install -y --no-install-recommends \
