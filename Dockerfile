@@ -73,11 +73,6 @@ RUN curl -L $HEPTIO_URL \
     && chmod +x $BIN_PATH/aws-iam-authenticator \
     && ln -s $BIN_PATH/aws-iam-authenticator $BIN_PATH/heptio-authenticator-aws
 
-ARG RBAC_LOOKUP_URL=https://github.com/FairwindsOps/rbac-lookup/releases/download/v0.5.0/rbac-lookup_0.5.0_Linux_x86_64.tar.gz
-RUN curl -L $RBAC_LOOKUP_URL \
-	-o $TMP_PATH/rbac-lookup.tar.gz \
-    && tar -xvf $TMP_PATH/rbac-lookup.tar.gz -C $TMP_PATH \
-    && cp $TMP_PATH/rbac-lookup /usr/local/bin/
 
 # sops
 ARG SOPS_VERSION="3.3.1"
@@ -129,6 +124,12 @@ RUN curl -L $HEPTIO_URL \
         -o $BIN_PATH/kube-ldap-client-go-exec-plugin-linux \
     && chmod +x $BIN_PATH/kube-ldap-client-go-exec-plugin-linux \
     && ln -s $BIN_PATH/kube-ldap-client-go-exec-plugin-linux $BIN_PATH/kube-ldap-client-go-exec-plugin
+
+ARG RBAC_LOOKUP_URL=https://github.com/FairwindsOps/rbac-lookup/releases/download/v0.5.0/rbac-lookup_0.5.0_Linux_x86_64.tar.gz
+RUN curl -L $RBAC_LOOKUP_URL \
+	-o $TMP_PATH/rbac-lookup.tar.gz \
+    && tar -xvf $TMP_PATH/rbac-lookup.tar.gz -C $TMP_PATH \
+    && cp $TMP_PATH/rbac-lookup /usr/local/bin/
 
 ## post commands
 RUN echo "alias ll='ls -lrt'" >> $HOME/.bashrc \
